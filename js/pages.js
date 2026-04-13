@@ -74,13 +74,23 @@ const Pages = {
 
   selectOption(questionIndex, optionIndex) {
     const q = Questions.all[questionIndex];
-    App.state.answers[q.id] = optionIndex;
+
+    // 再次点击已选中的选项 → 取消选择
+    if (App.state.answers[q.id] === optionIndex) {
+      delete App.state.answers[q.id];
+    } else {
+      App.state.answers[q.id] = optionIndex;
+    }
 
     const card = document.getElementById('q-' + questionIndex);
     if (card) {
       const btns = card.querySelectorAll('.option-btn');
+      const selected = App.state.answers[q.id];
       btns.forEach((btn, i) => {
-        if (i === optionIndex) {
+        if (selected === undefined) {
+          btn.classList.remove('selected');
+          btn.style.opacity = '';
+        } else if (i === selected) {
           btn.classList.add('selected');
           btn.style.opacity = '';
         } else {
@@ -98,10 +108,9 @@ const Pages = {
       progressEl.querySelector('.fill').style.width = ((answered / total) * 100) + '%';
     }
 
-    if (answered === total) {
-      const submitWrap = document.getElementById('quiz-submit');
-      if (submitWrap) submitWrap.style.display = 'block';
-    }
+    // 答完才显示提交按钮，取消后隐藏
+    const submitWrap = document.getElementById('quiz-submit');
+    if (submitWrap) submitWrap.style.display = (answered === total) ? 'block' : 'none';
   },
 
   submitQuiz() {
